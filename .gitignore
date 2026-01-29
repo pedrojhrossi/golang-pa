@@ -1,0 +1,33 @@
+# Binary files
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test coverage files
+*.out
+*.test
+*.prof
+
+# Dependency directories
+# (Optional: Only ignore vendor/ if you aren't using 'go mod vendor')
+vendor/
+
+# IDE Specifics
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS Specifics
+.DS_Store
+Thumbs.db
+
+# Environment variables (Sensitive Info)
+.env
+*.env.local
+
+# GIT changes
+git-changes.txt
