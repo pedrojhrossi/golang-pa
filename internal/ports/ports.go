@@ -13,4 +13,5 @@ type TenantRepository interface {
 
 type TenantService interface {
 	RegisterTenant(ctx context.Context, name, email string) (*domain.Tenant, error)
+	GetTenant(ctx context.Context, id string) (*domain.Tenant, error)
 }

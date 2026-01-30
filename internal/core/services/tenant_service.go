@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 
 	"gitlab.com/pedrojhrossi/golang-pa/internal/core/domain"
 	"gitlab.com/pedrojhrossi/golang-pa/internal/ports"
@@ -26,4 +27,12 @@ func (s *tenantService) RegisterTenant(ctx context.Context, name, email string) 
 	}
 
 	return newTenant, nil
+}
+
+func (s *tenantService) GetTenant(ctx context.Context, id string) (*domain.Tenant, error) {
+	if id == "" {
+		return nil, errors.New("id is required")
+	}
+
+	return s.repo.GetByID(ctx, id)
 }

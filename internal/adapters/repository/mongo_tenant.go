@@ -2,8 +2,11 @@ package repository
 
 import (
 	"context"
+	"errors"
 
+	"github.com/google/uuid"
 	"gitlab.com/pedrojhrossi/golang-pa/internal/core/domain"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -23,6 +26,20 @@ func (r *MongoTenantRepository) Create(ctx context.Context, tenant *domain.Tenan
 }
 
 func (r *MongoTenantRepository) GetByID(ctx context.Context, id string) (*domain.Tenant, error) {
-	// Implementation logic for finding by ID
-	return nil, nil
+	parsedId, err := uuid.Parse(id)
+	if err != nil {
+		return nil, errors.New("invalid uuid format")
+	}
+
+	var tenant domain.Tenant
+	err = r.db.FindOne(ctx, bson.M{"_id": parsedId}).Decode(&tenant)
+
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, errors.New("tenant not found")
+		}
+		return nil, err
+	}
+
+	return &tenant, nil
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"gitlab.com/pedrojhrossi/golang-pa/internal/ports"
 )
 
@@ -35,5 +36,22 @@ func (h *TenantHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(tenant)
+}
+
+func (h *TenantHandler) Get(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	tenant, err := h.service.GetTenant(r.Context(), id)
+	if err != nil {
+		if err.Error() == "tenant not found" {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content_Type", "application/json")
 	json.NewEncoder(w).Encode(tenant)
 }

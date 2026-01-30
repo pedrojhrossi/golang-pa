@@ -39,7 +39,11 @@ func main() {
 	tenantHandler := handler.NewTenantHandler(tenantService)
 
 	r := chi.NewRouter()
-	r.Post("/tenants", tenantHandler.Create)
+	r.Route("/tenants", func(r chi.Router) {
+		r.Post("/", tenantHandler.Create)
+		r.Get("/{id}", tenantHandler.Get)
+	})
 
+	log.Printf("Server starting on port %s", cfg.Port)
 	log.Fatal(http.ListenAndServe(":"+cfg.Port, r))
 }
