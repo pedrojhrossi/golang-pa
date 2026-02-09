@@ -11,17 +11,19 @@ import (
 )
 
 type MongoTenantRepository struct {
-	db *mongo.Collection
+	db         *mongo.Database
+	collection *mongo.Collection
 }
 
-func NewMongoTenantRepository(client *mongo.Client, dbName string) *MongoTenantRepository {
+func NewMongoTenantRepository(db *mongo.Database) *MongoTenantRepository {
 	return &MongoTenantRepository{
-		db: client.Database(dbName).Collection("tenants"),
+		db:         db,
+		collection: db.Collection("tenants"),
 	}
 }
 
 func (r *MongoTenantRepository) Create(ctx context.Context, tenant *domain.Tenant) error {
-	_, err := r.db.InsertOne(ctx, tenant)
+	_, err := r.collection.InsertOne(ctx, tenant)
 	return err
 }
 
@@ -32,7 +34,7 @@ func (r *MongoTenantRepository) GetByID(ctx context.Context, id string) (*domain
 	}
 
 	var tenant domain.Tenant
-	err = r.db.FindOne(ctx, bson.M{"_id": parsedId}).Decode(&tenant)
+	err = r.collection.FindOne(ctx, bson.M{"_id": parsedId}).Decode(&tenant)
 
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {

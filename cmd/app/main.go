@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"gitlab.com/pedrojhrossi/golang-pa/config"
 	"gitlab.com/pedrojhrossi/golang-pa/internal/adapters/handler"
 	"gitlab.com/pedrojhrossi/golang-pa/internal/adapters/repository"
@@ -31,17 +32,34 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	db := client.Database(cfg.DBName)
 
-	tenantRepo := repository.NewMongoTenantRepository(client, cfg.DBName)
+	//** Initialize Repositories (Secondary Adapters)
+	tenantRepo := repository.NewMongoTenantRepository(db)
+	appointmentRepo := repository.NewMongoAppointmentRepository(db)
 
+	//** Initialize Services (Core logic)
 	tenantService := services.NewTenantService(tenantRepo)
+	appointmentService := services.NewAppointmentService(appointmentRepo)
 
+	//** Initialize Handlers (Primary Adapters)
 	tenantHandler := handler.NewTenantHandler(tenantService)
+	appointmentHandler := handler.NewAppointmentHandler(appointmentService)
 
 	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
 	r.Route("/tenants", func(r chi.Router) {
 		r.Post("/", tenantHandler.Create)
 		r.Get("/{id}", tenantHandler.Get)
+
+		r.Route("/{tenantID}/appointments", func(r chi.Router) {
+			r.Post("/", appointmentHandler.Schedule)
+			r.Get("/", appointmentHandler.List)
+			r.Get("/{id}", appointmentHandler.GetByID)
+			r.Delete("/{id}/cancel", appointmentHandler.Cancel)
+		})
 	})
 
 	log.Printf("Server starting on port %s", cfg.Port)
