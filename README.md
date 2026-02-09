@@ -23,6 +23,7 @@ The primary goal of this repository is to showcase a scalable backend system whe
 * **RESTful API:** Lightweight, idiomatic performance using `go-chi/chi`.
 * **NoSQL Persistence:** MongoDB integration using the Repository Pattern.
 * **Dependency Injection:** Clean initialization and wiring of components in the application entry point.
+* **Conflict Prevention:** The service enforces a "no-overlap" policy by checking existing schedules via the Repository Port before booking.
 
 ---
 
@@ -54,8 +55,8 @@ The primary goal of this repository is to showcase a scalable backend system whe
 
 ### 2. The Ports (Interfaces)
 Ports define the contracts for how the core interacts with the outside world:
-* **Input Ports:** Methods the Service exposes to the API (e.g., `RegisterTenant`).
-* **Output Ports:** Methods the Service requires from a database (e.g., `Create`, `GetByID`).
+* **Input Ports:** Methods the Service exposes to the API (e.g., `RegisterTenant`, `Schedule`, `CancelAppointment`).
+* **Output Ports:** Methods the Service requires (e.g., `FindOverlapping`, `Update`, `Create`, `GetByID`).
 
 ### 3. The Adapters (Infrastructure)
 * **HTTP Handler (Chi):** A **Primary Adapter** that converts JSON requests into domain-friendly data and triggers the service.
@@ -94,15 +95,21 @@ Ports define the contracts for how the core interacts with the outside world:
 ---
 
 ## 🧪 Testing the API
-### Create a Tenant (POST)
-curl -X POST http://localhost:9080/tenants \
--H "Content-Type: application/json" \
--d '{"name": "Health Clinic Alpha", "email": "admin@alpha.com"}'
+### Tenants
+* **Create a Tenant (POST):**
+  `curl -X POST http://localhost:9080/tenants -d '{"name": "Health Clinic Alpha", "email": "admin@alpha.com"}'`
 
+### Appointments
+* **Schedule an Appointment (POST):**
+  `curl -X POST http://localhost:9080/tenants/<TENANT_ID>/appointments -d '{"patient_id": "<UUID>", "patient_name": "John Doe", "start_time": "2026-03-01T10:00:00Z", "end_time": "2026-03-01T11:00:00Z"}'`
 
-### Retrieve a Tenant (GET)
-\# Replace <ID> with the UUID returned from the POST request
-curl -X GET http://localhost:9080/tenants/<ID>
+* **List Tenant Appointments (GET):**
+  `curl -X GET http://localhost:9080/tenants/<TENANT_ID>/appointments`
+
+* **Cancel an Appointment (PATCH):**
+  `curl -X PATCH http://localhost:9080/tenants/<TENANT_ID>/appointments/<APPOINTMENT_ID>/cancel`
+
+---
 
 ## ✅ Tech Stack
 * **Language:** Go (Golang)
@@ -114,7 +121,7 @@ curl -X GET http://localhost:9080/tenants/<ID>
 ## 🗺 Roadmap
 * [x] Core Hexagonal Architecture Setup
 * [x] Tenant Management Vertical Slice
-* [ ] **Next:** Appointment Domain (Scheduling & Conflicts)
-* [ ] Multi-tenant isolation middleware
+* [x] Appointment Domain (Scheduling & Conflicts)
+* [ ] **Next:** Multi-tenant isolation middleware
 * [ ] Unit Testing with Mocking (Testify/GoMock)
 * [ ] JWT Authentication per Tenant
