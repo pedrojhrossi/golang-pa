@@ -77,8 +77,8 @@ func (r *MongoAppointmentRepository) FindOverlapping(ctx context.Context, tenant
 	filter := bson.M{
 		"tenant_id":  tenantID.String(),
 		"status":     string(domain.StatusScheduled),
-		"start_time": bson.M{"$lt": end},
-		"end_time":   bson.M{"$lt": start},
+		"start_time": bson.M{"$lte": end},
+		"end_time":   bson.M{"$gt": start},
 	}
 
 	cursor, err := r.collection.Find(ctx, filter)
