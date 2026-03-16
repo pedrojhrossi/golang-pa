@@ -23,7 +23,8 @@ func NewMongoTenantRepository(db *mongo.Database) *MongoTenantRepository {
 }
 
 func (r *MongoTenantRepository) Create(ctx context.Context, tenant *domain.Tenant) error {
-	_, err := r.collection.InsertOne(ctx, tenant)
+	dto := toTenantPersistenceDTO(tenant)
+	_, err := r.collection.InsertOne(ctx, dto)
 	return err
 }
 
@@ -33,8 +34,13 @@ func (r *MongoTenantRepository) GetByID(ctx context.Context, id string) (*domain
 		return nil, errors.New("invalid uuid format")
 	}
 
-	var tenant domain.Tenant
-	err = r.collection.FindOne(ctx, bson.M{"_id": parsedId}).Decode(&tenant)
+	var dto tenantDTO
+
+	filter := bson.M{
+		"_id": parsedId,
+	}
+
+	err = r.collection.FindOne(ctx, filter).Decode(&dto)
 
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -43,5 +49,25 @@ func (r *MongoTenantRepository) GetByID(ctx context.Context, id string) (*domain
 		return nil, err
 	}
 
-	return &tenant, nil
+	return toTenantDomainEntity(dto), nil
+}
+
+func (r *MongoTenantRepository) ListTenants(ctx context.Context) ([]*domain.Tenant, error) {
+	cursor, err := r.collection.Find(ctx, nil)
+	if err != nil {
+		return nil, errors.New("failed to fetch tenants")
+	}
+	defer cursor.Close(ctx)
+
+	var dtos []tenantDTO
+	if err := cursor.All(ctx, &dtos); err != nil {
+		return nil, err
+	}
+
+	tenants := make([]*domain.Tenant, len(dtos))
+	for i, d := range dtos {
+		tenants[i] = toTenantDomainEntity(d)
+	}
+
+	return tenants, nil
 }

@@ -11,11 +11,13 @@ import (
 type TenantRepository interface {
 	Create(ctx context.Context, tenant *domain.Tenant) error
 	GetByID(ctx context.Context, id string) (*domain.Tenant, error)
+	ListTenants(ctx context.Context) ([]*domain.Tenant, error)
 }
 
 type TenantService interface {
 	RegisterTenant(ctx context.Context, name, email string) (*domain.Tenant, error)
 	GetTenant(ctx context.Context, id string) (*domain.Tenant, error)
+	ListAllTenants(ctx context.Context) ([]*domain.Tenant, error)
 }
 
 type AppointmentRepository interface {

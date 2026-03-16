@@ -19,11 +19,7 @@ func NewTenantHandler(service ports.TenantService) *TenantHandler {
 }
 
 func (h *TenantHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Name  string `json:"name"`
-		Email string `json:"email"`
-	}
-
+	var body tenantRequest
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
@@ -36,7 +32,9 @@ func (h *TenantHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tenant)
+	w.WriteHeader(http.StatusCreated)
+	response := fromTenantDomain(tenant)
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *TenantHandler) Get(w http.ResponseWriter, r *http.Request) {
@@ -53,5 +51,22 @@ func (h *TenantHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content_Type", "application/json")
-	json.NewEncoder(w).Encode(tenant)
+	response := fromTenantDomain(tenant)
+	json.NewEncoder(w).Encode(response)
+}
+
+func (h *TenantHandler) List(w http.ResponseWriter, r *http.Request) {
+	tenants, err := h.service.ListAllTenants(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := make([]tenantResponse, len(tenants))
+	for i, t := range tenants {
+		response[i] = fromTenantDomain(t)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
