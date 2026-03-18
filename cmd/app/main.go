@@ -52,6 +52,7 @@ func main() {
 
 	r.Route("/tenants", func(r chi.Router) {
 		r.Post("/", tenantHandler.Create)
+		r.Get("/", tenantHandler.List)
 		r.Get("/{id}", tenantHandler.Get)
 
 		r.Route("/{tenantID}/appointments", func(r chi.Router) {

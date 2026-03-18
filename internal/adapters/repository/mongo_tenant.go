@@ -29,7 +29,7 @@ func (r *MongoTenantRepository) Create(ctx context.Context, tenant *domain.Tenan
 }
 
 func (r *MongoTenantRepository) GetByID(ctx context.Context, id string) (*domain.Tenant, error) {
-	parsedId, err := uuid.Parse(id)
+	_, err := uuid.Parse(id)
 	if err != nil {
 		return nil, errors.New("invalid uuid format")
 	}
@@ -37,7 +37,8 @@ func (r *MongoTenantRepository) GetByID(ctx context.Context, id string) (*domain
 	var dto tenantDTO
 
 	filter := bson.M{
-		"_id": parsedId,
+		"_id":    id,
+		"status": domain.TenantStatusActive,
 	}
 
 	err = r.collection.FindOne(ctx, filter).Decode(&dto)
@@ -52,8 +53,15 @@ func (r *MongoTenantRepository) GetByID(ctx context.Context, id string) (*domain
 	return toTenantDomainEntity(dto), nil
 }
 
-func (r *MongoTenantRepository) ListTenants(ctx context.Context) ([]*domain.Tenant, error) {
-	cursor, err := r.collection.Find(ctx, nil)
+func (r *MongoTenantRepository) ListTenants(ctx context.Context, includeArchived bool) ([]*domain.Tenant, error) {
+	filter := bson.M{"status": domain.TenantStatusActive}
+
+	if includeArchived {
+		filter = bson.M{}
+	}
+
+	cursor, err := r.collection.Find(ctx, filter)
+
 	if err != nil {
 		return nil, errors.New("failed to fetch tenants")
 	}
