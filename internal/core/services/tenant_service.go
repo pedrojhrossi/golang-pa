@@ -36,3 +36,17 @@ func (s *tenantService) GetTenant(ctx context.Context, id string) (*domain.Tenan
 
 	return s.repo.GetByID(ctx, id)
 }
+
+func (s *tenantService) ListAllTenants(ctx context.Context, includeArchived bool) ([]*domain.Tenant, error) {
+	return s.repo.ListTenants(ctx, includeArchived)
+}
+
+func (s *tenantService) DeleteTenant(ctx context.Context, id string) error {
+	tenant, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	tenant.Archive()
+	return s.repo.Update(ctx, tenant)
+}

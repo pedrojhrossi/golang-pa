@@ -11,11 +11,15 @@ import (
 type TenantRepository interface {
 	Create(ctx context.Context, tenant *domain.Tenant) error
 	GetByID(ctx context.Context, id string) (*domain.Tenant, error)
+	ListTenants(ctx context.Context, includeArchived bool) ([]*domain.Tenant, error)
+	Update(ctx context.Context, tenant *domain.Tenant) error
 }
 
 type TenantService interface {
 	RegisterTenant(ctx context.Context, name, email string) (*domain.Tenant, error)
 	GetTenant(ctx context.Context, id string) (*domain.Tenant, error)
+	ListAllTenants(ctx context.Context, includeArchived bool) ([]*domain.Tenant, error)
+	DeleteTenant(ctx context.Context, id string) error
 }
 
 type AppointmentRepository interface {
