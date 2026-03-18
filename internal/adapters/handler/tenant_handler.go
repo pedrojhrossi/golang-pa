@@ -41,7 +41,6 @@ func (h *TenantHandler) Get(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
 	tenant, err := h.service.GetTenant(r.Context(), id)
-	println(tenant.ID.Domain().String())
 	if err != nil {
 		if err.Error() == "tenant not found" {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -71,4 +70,16 @@ func (h *TenantHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+func (h *TenantHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	err := h.service.DeleteTenant(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

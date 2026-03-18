@@ -79,3 +79,13 @@ func (r *MongoTenantRepository) ListTenants(ctx context.Context, includeArchived
 
 	return tenants, nil
 }
+
+func (r *MongoTenantRepository) Update(ctx context.Context, tenant *domain.Tenant) error {
+	dto := toTenantPersistenceDTO(tenant)
+	filter := bson.M{
+		"_id": dto.ID,
+	}
+
+	_, err := r.collection.ReplaceOne(ctx, filter, dto)
+	return err
+}

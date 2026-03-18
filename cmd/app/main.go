@@ -54,6 +54,7 @@ func main() {
 		r.Post("/", tenantHandler.Create)
 		r.Get("/", tenantHandler.List)
 		r.Get("/{id}", tenantHandler.Get)
+		r.Delete("/{id}", tenantHandler.Delete)
 
 		r.Route("/{tenantID}/appointments", func(r chi.Router) {
 			r.Post("/", appointmentHandler.Schedule)
