@@ -113,7 +113,7 @@ Ports define the contracts for how the core interacts with the outside world:
  
 ### Appointments
 * **Schedule an Appointment (POST):**
-  `curl -X POST http://localhost:9080/tenants/<TENANT_ID>/appointments -d '{"patient_id": "<UUID>", "patient_name": "John Doe", "start_time": "2026-03-01T10:00:00Z", "end_time": "2026-03-01T11:00:00Z"}'`
+  `curl -X POST http://localhost:9080/tenants/<TENANT_ID>/appointments -H "Content-Type: application/json" -d '{"patient_id": "<USER_UUID>", "patient_name": "John Doe", "start_time": "2026-03-30T10:00:00Z", "end_time": "2026-03-30T11:00:00Z"}'`
 
 * **List Tenant Appointments (GET):**
   `curl -X GET http://localhost:9080/tenants/<TENANT_ID>/appointments`
