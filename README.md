@@ -97,8 +97,20 @@ Ports define the contracts for how the core interacts with the outside world:
 ## 🧪 Testing the API
 ### Tenants
 * **Create a Tenant (POST):**
-  `curl -X POST http://localhost:9080/tenants -d '{"name": "Health Clinic Alpha", "email": "admin@alpha.com"}'`
+  `curl -X POST http://localhost:9080/tenants -H "Content-Type: application/json" -d '{"name": "Health Clinic Alpha", "email": "admin@alpha.com"}'`
 
+* **List Active Tenants (GET):**
+  `curl -X GET http://localhost:9080/tenants`
+ 
+* **List Tenants including Archived (GET):**
+  `curl -X GET "http://localhost:9080/tenants?archive=true"`
+ 
+* **Get Tenant by ID (GET):**
+  `curl -X GET http://localhost:9080/tenants/<TENANT_ID>`
+ 
+* **Create a Tenant (DELETE):**
+  `curl -X DELETE http://localhost:9080/tenants/<TENANT_ID>`
+ 
 ### Appointments
 * **Schedule an Appointment (POST):**
   `curl -X POST http://localhost:9080/tenants/<TENANT_ID>/appointments -d '{"patient_id": "<UUID>", "patient_name": "John Doe", "start_time": "2026-03-01T10:00:00Z", "end_time": "2026-03-01T11:00:00Z"}'`
@@ -106,8 +118,11 @@ Ports define the contracts for how the core interacts with the outside world:
 * **List Tenant Appointments (GET):**
   `curl -X GET http://localhost:9080/tenants/<TENANT_ID>/appointments`
 
-* **Cancel an Appointment (PATCH):**
-  `curl -X PATCH http://localhost:9080/tenants/<TENANT_ID>/appointments/<APPOINTMENT_ID>/cancel`
+* **Get Specific Appointment (GET):**
+  `curl -X GET http://localhost:9080/tenants/<TENANT_ID>/appointments/<APPOINTMENT_ID>`
+
+* **Cancel an Appointment (DELETE):**
+  `curl -X DELETE http://localhost:9080/tenants/<TENANT_ID>/appointments/<APPOINTMENT_ID>/cancel`
 
 ---
 
