@@ -18,10 +18,9 @@ func NewAppointmentHandler(service ports.AppointmentService) *AppointmentHandler
 }
 
 func (h *AppointmentHandler) Schedule(w http.ResponseWriter, r *http.Request) {
-	//** Extract TenantID from URL
-	tenantID, err := uuid.Parse(chi.URLParam(r, "tenantID"))
-	if err != nil {
-		http.Error(w, "Invalid tenant id", http.StatusBadRequest)
+	tenant := GetTenantFromContext(r.Context())
+	if tenant == nil {
+		http.Error(w, "Tenant context missing", http.StatusBadRequest)
 		return
 	}
 
@@ -38,7 +37,7 @@ func (h *AppointmentHandler) Schedule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	apt, err := h.service.Schedule(r.Context(), tenantID, patientID, req.PatientName, req.StartTime, req.EndTime)
+	apt, err := h.service.Schedule(r.Context(), tenant.ID, patientID, req.PatientName, req.StartTime, req.EndTime)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
@@ -69,13 +68,13 @@ func (h *AppointmentHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AppointmentHandler) List(w http.ResponseWriter, r *http.Request) {
-	tenantID, err := uuid.Parse(chi.URLParam(r, "tenantID"))
-	if err != nil {
-		http.Error(w, "invalid tenant id", http.StatusBadRequest)
+	tenant := GetTenantFromContext(r.Context())
+	if tenant == nil {
+		http.Error(w, "Tenant context missing", http.StatusBadRequest)
 		return
 	}
 
-	appointments, err := h.service.ListByTenant(r.Context(), tenantID)
+	appointments, err := h.service.ListByTenant(r.Context(), tenant.ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
