@@ -24,7 +24,7 @@ The primary goal of this repository is to showcase a scalable backend system whe
 * **NoSQL Persistence:** MongoDB integration using the Repository Pattern.
 * **Dependency Injection:** Clean initialization and wiring of components in the application entry point.
 * **Conflict Prevention:** The service enforces a "no-overlap" policy by checking existing schedules via the Repository Port before booking.
-
+* **Multi-tenant Isolation:** Middleware-level protection that ensures requests are scoped to valid, active tenants, preventing cross-tenant data leakage.
 ---
 
 ## 📦 Project Structure
@@ -62,6 +62,15 @@ Ports define the contracts for how the core interacts with the outside world:
 * **HTTP Handler (Chi):** A **Primary Adapter** that converts JSON requests into domain-friendly data and triggers the service.
 * **MongoDB Repository:** A **Secondary Adapter** that implements the Output Port. It handles BSON mapping and database-specific queries.
 
+### 4. Tenant Isolation Middleware
+To ensure strict data isolation, we implemented a custom middleware located in `internal/adapters/handler/middleware.go`. 
+
+* **Validation:** It intercepts requests to `/{tenantID}/...` routes, validates the UUID format, and verifies the tenant's existence and `Active` status via the `TenantService`.
+* **Context Injection:** Once validated, the full `domain.Tenant` entity is injected into the standard `http.Request` context.
+* **Security:** If a tenant is archived or non-existent, the middleware returns a `404 Not Found`. This prevents "ID Enumeration" attacks by not confirming whether an ID exists but is unauthorized.
+* **Handler Simplification:** Downstream handlers (like `AppointmentHandler`) retrieve the tenant directly from the context, eliminating redundant database lookups and keeping the handler logic "thin."
+> **💡 Pro-Tip: Type-Safe Context Propagation**
+> We use a private `contextKey` type for tenant injection. This is a Go idiomatic best practice that prevents "key collisions" from third-party libraries and ensures strict type safety when retrieving the tenant entity from the request lifecycle.
 ---
 
 ## 🚦 Getting Started
@@ -108,7 +117,7 @@ Ports define the contracts for how the core interacts with the outside world:
 * **Get Tenant by ID (GET):**
   `curl -X GET http://localhost:9080/tenants/<TENANT_ID>`
  
-* **Create a Tenant (DELETE):**
+* **Archive a Tenant (DELETE):**
   `curl -X DELETE http://localhost:9080/tenants/<TENANT_ID>`
  
 ### Appointments
@@ -137,6 +146,6 @@ Ports define the contracts for how the core interacts with the outside world:
 * [x] Core Hexagonal Architecture Setup
 * [x] Tenant Management Vertical Slice
 * [x] Appointment Domain (Scheduling & Conflicts)
-* [ ] **Next:** Multi-tenant isolation middleware
-* [ ] Unit Testing with Mocking (Testify/GoMock)
+* [x] Multi-tenant isolation middleware
+* [ ] **Next:** Unit Testing with Mocking (Testify/GoMock)
 * [ ] JWT Authentication per Tenant
