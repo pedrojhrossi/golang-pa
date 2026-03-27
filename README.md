@@ -25,6 +25,30 @@ The primary goal of this repository is to showcase a scalable backend system whe
 * **Dependency Injection:** Clean initialization and wiring of components in the application entry point.
 * **Conflict Prevention:** The service enforces a "no-overlap" policy by checking existing schedules via the Repository Port before booking.
 * **Multi-tenant Isolation:** Middleware-level protection that ensures requests are scoped to valid, active tenants, preventing cross-tenant data leakage.
+
+---
+
+## 🧪 Testing Strategy
+This project emphasizes high reliability through automated unit testing of the business logic.
+
+### Mocking with Testify
+We use `github.com/stretchr/testify/mock` to generate and manage mocks for our ports. This allows us to test the `AppointmentService` in complete isolation from MongoDB.
+* **Mock Files:** Located in `internal/adapters/repository/mocks/`.
+* **Mock Matchers:** We use `mock.MatchedBy` to validate complex objects (like `domain.Appointment`) created dynamically during execution.
+* **Context Awareness:** Tests are designed to handle Go `context` correctly, ensuring that tenant information passed via context is respected.
+
+### Running Tests
+To run the full suite of unit tests:
+```bash
+   go test ./...
+```
+## 🛠 Business Logic: Overlap Prevention
+A core feature of this system is the prevention of double-booking. The logic is enforced at the Repository level but validated by the Service layer.
+
+An appointment is considered overlapping if it satisfies the following condition against an existing record:
+`ExistingStart <= NewEnd` **AND** `ExistingEnd > NewStart`
+* **Edge-to-Edge Support:** Our implementation allows "back to back" appointments. If an appointment ends at 11:00 am, a new one van start exactly 11:00 am without conflict.
+
 ---
 
 ## 📦 Project Structure
@@ -103,7 +127,7 @@ To ensure strict data isolation, we implemented a custom middleware located in `
 
 ---
 
-## 🧪 Testing the API
+## 🚀 API Endpoints
 ### Tenants
 * **Create a Tenant (POST):**
   `curl -X POST http://localhost:9080/tenants -H "Content-Type: application/json" -d '{"name": "Health Clinic Alpha", "email": "admin@alpha.com"}'`
@@ -147,5 +171,5 @@ To ensure strict data isolation, we implemented a custom middleware located in `
 * [x] Tenant Management Vertical Slice
 * [x] Appointment Domain (Scheduling & Conflicts)
 * [x] Multi-tenant isolation middleware
-* [ ] **Next:** Unit Testing with Mocking (Testify/GoMock)
-* [ ] JWT Authentication per Tenant
+* [x] Unit Testing with Mocking (Testify/GoMock)
+* [ ] **Next:** JWT Authentication per Tenant
