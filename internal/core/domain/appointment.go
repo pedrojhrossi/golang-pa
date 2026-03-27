@@ -42,6 +42,7 @@ func NewAppointment(tenantID, patientID uuid.UUID, patientName string, start, en
 	return &Appointment{
 		ID:          uuid.New(),
 		TenantID:    tenantID,
+		PatientID:   patientID,
 		PatientName: patientName,
 		StartTime:   start,
 		EndTime:     end,
